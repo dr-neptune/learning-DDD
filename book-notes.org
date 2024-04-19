@@ -1,0 +1,60 @@
+#+TITLE: Notes from Learning DDD
+
+* Preface
+
+Stages
+1. Strategic design, in which we understand the business problem and
+   break the problem down into smaller, solvable, interconnected problems.
+2. Tactical design, where we transform the discoveries of strategic
+   design into software architecture and implementation.
+
+The book is divided into 4 parts:
+- strategic design
+- tactical design
+- DDD in practice
+- DDD's relationships to other methodologies
+
+* Introduction
+
+Most software fails in some way. The author posits that the cause is
+communication issues. DDD proposes to attack the root cause through a
+framework for effective communication. DDD can be divided into
+strategic and tactical:
+
+- The strategic tools of DDD are used to analyze business domains and
+  strategy, and to foster a shared understanding of the business
+  between the different stakeholders.
+  - handles the what and why of the software we are building
+- The tactical tools allow us to write code in a way that reflects the
+  business domain, address its goals, and speak the language of the
+  business.
+  - the how, how each component is implemented
+
+* 1. Analyzing Business Domains
+
+This chapter is about learning how companies work: why they exist,
+what goals they are pursuing, and their strategies for achieving their
+goals. To design and build an effective solution, we have to
+understand the problem.
+
+To achieve its business domain's goals and targets, a company has to
+operate in multiple subdomains. A *subdomain* is a fine-grained area of
+business activity. A single subdomain is not enough for a company to
+succeed, there has to be multiple subdomains that interact with each
+other to achieve the company's goals in its business domain.
+
+Ask whether the subdomain in question can be turned into a side
+business. Would someone pay for it on it's own? If so, this is a core
+subdomain.
+
+| Subdomain type | Competitive advantage | Complexity | Volatility | Implementation      | Problem    |
+|----------------+-----------------------+------------+------------+---------------------+------------|
+| Core           | Yes                   | High       | High       | In-house            | Interesting|
+| Generic        | No                    | High       | Low        | Buy/adopt           | Solved     |
+| Supporting     | No                    | Low        | Low        | In-house/outsource  | Obvious    |
+
+
+idea: Conway's law
+What would software that runs the entirety of $EMPLOYER look like?
+
+* 2. Discovering Domain Knowledge
