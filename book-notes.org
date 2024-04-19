@@ -58,3 +58,167 @@ idea: Conway's law
 What would software that runs the entirety of $EMPLOYER look like?
 
 * 2. Discovering Domain Knowledge
+
+Gherkin tests are good ways to make domain oriented scenarios that
+define software behavior well
+
+#+begin_text
+Feature: Guess the word
+
+  # The first example has two steps
+  Scenario: Maker starts a game
+    When the Maker starts a game
+    Then the Maker waits for a Breaker to join
+
+  # The second example has three steps
+  Scenario: Breaker joins a game
+    Given the Maker has started a game with the word "silky"
+    When the Breaker joins the Maker's game
+    Then the Breaker must guess a word with 5 characters
+#+end_text
+
+* 3. Managing Domain Complexity
+
+Architectural design is system design. System design is contextual
+design -- it is inherently about boundaries (what's in, what's out,
+what moves between), and about trade-offs. It reshapes what is
+outside, just as it shapes what is inside.
+
+The bounded context pattern is the DDD tool for defining physical and
+ownership boundaries.
+
+Bounded contexts decompose a system into physical components—services,
+subsystems, and so on. Each bounded context’s lifecycle is decoupled
+from the rest. Each bounded context can evolve independently from the
+rest of the system. However, the bounded contexts have to work
+together to form a system. Some of the changes will inadvertently
+affect another bounded context. In the next chapter, we’ll talk about
+the different patterns for integrating bounded contexts that can be
+used to protect them from cascading changes.
+
+* 4. Integrating Bounded Contexts
+
+Although bounded contexts can evolve independently, they have to
+integrate with one another. As a result, there will always be
+touchpoints between bounded contexts. These are called /contracts/.
+
+This chapter focuses on defining relationshiops and integrations
+between bounded contexts. The book divides these into 3 groups, each
+representing a type of team collaboration: cooperation,
+customer-supplier, and separate ways.
+
+** Cooperation
+
+Bounded contexts implemented by teams with well-established
+communication. This applies to single teams, or teams with dependent
+goals. The main criteria is the quality of the teams' communications
+and collaboration.
+
+2 DDD patterns suitable for cooperating teams:
+
+*** Partnership
+
+Integration between bounded contexts is coordinated in an ad hoc
+manner. One team can notify a second team about a change in the API,
+and the second team will cooperate and adapt -- no drama or conflicts.
+
+*** Shared Kernel
+
+A case where the same model of a subdomain, or a part of it, will be
+implemented in multiple bounded contexts. The shared model is designed
+according to the needs of all it's overlapping bounded contexts, and
+each change has to be consistent across each bounded context.
+
+The overarching applicability criterion for the shared kernel pattern
+is the cost of duplication vs the cost of coordination.
+
+** Customer-Supplier
+
+The supplier provides a service for its customers. Unlike in
+cooperation, both teams can succeed independently. In most cases, we
+have an imbalance of power: either the upstream or downstream team can
+dictate the integration contract.
+
+3 patterns addressing such power differences:
+
+*** Conformist
+
+balance of power favors the upstream team, which has no real
+motivation to support its clients' needs. The supplier offers a
+contract according to its own model, and if the downstream team can
+accept it the relationship is called conformist.
+
+*** Anticorruption Layer
+
+The consumer is not willing to accept the supplier's model. Instead,
+the downstream (customer) translates the supplier's bounded context's
+model into a model tailored to its own needs via an anticorruption
+layer.
+
+Some reasons this may happen:
+
+- downstream bounded context contains a core subdomain
+- upstream model is iniefficient or inconvenient for the customer's needs
+- the upstream contract changes often
+
+*** Open-host Service
+
+The case in which the power is skewed toward the consumers. The
+supplier is interested in protecting its consumers and providing the
+best service possible. To protect consumers from its implementation
+model, the upstream supplier decouples the implementation model from
+the public interface.
+
+In a sense, this pattern is the opposite of the anticorruption layer
+pattern. Instead of the consumer, the supplier implements the
+translation of its internal model.
+
+** Separate ways
+
+The last collaboration option is not to collaborate at all.
+
+* 5. Implementing Simple Business Logic
+
+We start with 2 patterns suited for simple business logic: transaction
+script and active record.
+
+** Transaction Script
+
+Organizes business logic by procedures where each procedure handles a
+single request from the presentation - Martin Fowler
+
+A system's public interface can be seen as a collection of business
+transactions that consumers can execute. The pattern organizes the
+system's business logic based on procedures, where each procedure
+implements an operation that is executed by the system's consumer via
+its public interface. In effect, the system's public operations are
+used an encapsulation boundaries.
+
+*** Implementation
+
+Each procedure is a straightforward procedural script. The only
+requirement procedures have to fulfill is transactional behavior. Each
+operation should either succeed or fail, but can never result in an
+invalid state.
+
+This is kind of like the unit of work implementation.
+
+** Active Record
+
+An object that wraps a row in a database table or view, encapsulates
+the database access, and adds domain logic on that data. - Martin
+Fowler
+
+*** Implementation
+
+This pattern uses objects, known as active records, to represent
+complicated data structures. It also implements data access methodsw
+for CRUD operations. The active record objects are coupled to an ORM
+or some other data access framework. The pattern's name is derived
+from the fact that each data structure is 'active', i.e. it implements
+data access logic.
+
+An active record is essentially a transaction script that optimizes
+access to databases.
+
+* 6. Tackling Complex Business Logic
