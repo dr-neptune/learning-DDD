@@ -221,4 +221,164 @@ data access logic.
 An active record is essentially a transaction script that optimizes
 access to databases.
 
+BUILD: Active Record Implementation
+BUILD: Transaction Script Implementation
+
 * 6. Tackling Complex Business Logic
+
+This chapter introduces a pattern oriented for complicated business
+logic: the domain model pattern. The pattern is "domain model", and
+the aggregates and value objects are its building blocks.
+
+** Domain Model
+
+Instead of CRUD interfaces, we deal with complicated state
+transitions, business rules, and invariants: rules that have to be
+protected at all times.
+
+*** Implementation
+
+A domain model is an object model of the domain that incorporates both
+behavior and data. DDD's tactical patterns -- aggregates, value
+objects, domain events, and domain services -- are the building blocks
+of such an object model. These all share a common theme: they put the
+business logic first.
+
+The model should be devoid of any infrastructural or technological
+concerns, such as implementing calls to databases or other external
+components of the system.
+
+*** Building Blocks
+
+**** Value object
+
+A value object is an object that can be identified by the composition
+of its values. The composition of the fields should be unique.
+
+***** Ubiquitous Language
+
+Relying exclusively on the language's standard library's primitive
+data types (strs, ints, dicts, etc) to represent concepts of the
+business domain is known as the primitive obsession code smell.
+
+The author suggests that you build a bunch of specific, well-named
+data types for inputting values. The validation logic can lie in the
+value objects themselves. Most importantly, value objects express the
+business domain's concepts: they make the code speak the ubiquitous
+language.
+
+**** Entities
+
+An entity is the opposite of a value object. It requires an explicit
+identification field to distinguish between the different instances of
+the entity.
+
+Contrary to value objects, entities are mutable and expected to
+change. Entities are an essential building block of any business
+domain.
+
+***** Aggregates
+
+An aggregate is an /entity/: it requires an explicit identification
+field and its state is expected to change during an instance's
+lifecycle. The goal of the pattern is to protect the consistency of
+its data. Since an aggregate's data is mutable, there are implications
+and challenges that the pattern has to address to keep its state
+consistent at all times.
+
+****** Consistency Enforcement
+
+The aggregate is a consistency enforcement boundary. The aggregate's
+logic has to validate all incoming modifications and ensure that
+changes do not contradict its business rules. In the implementation,
+the consistency is enforced by allowing only the aggregate's business
+logic to modify its state. All processes or objects external to the
+aggregate are only allowed to read the object's state. Its state can
+only be mutated by executing corresponding methods of the aggregate's
+public interface.
+
+The state-modifying methods exposed as an aggregate's public interface
+are often referred to as commands (as in a "command to do something").
+
+****** Transaction Boundary
+
+Since an aggregate's state can only be modified by its own business
+logic, the aggregate also acts as a transactional boundary. All
+changes to the aggregate's state should be committed transactionally
+as one atomic operation.
+
+Furthermore, no system operation can assume a multi-aggregate
+transaction. A change to the aggregate's state can only be committed
+individually, one aggregate per database transaction.
+
+****** Hierarchy of Entities
+
+We don't use entites as an independent pattern, only as part of an
+aggregate.
+
+BUILD: An example hierarchy of entities / aggregate with a well defined
+transactional boundary and aggregate root.
+
+This pattern is named "aggregate" because it aggregates business
+entities and value objects that belong to the same transaction
+boundary.
+
+
+#+DOWNLOADED: screenshot @ 2024-04-21 11:57:34
+[[file:6._Tackling_Complex_Business_Logic/2024-04-21_11-57-34_screenshot.png]]
+
+****** Domain Events
+
+A domain event is a message describing a significant event that has
+occurred in the business domain. The goal of a domain event is to
+describe what has happened in the business domain and provide all the
+necessary data related to the event.
+
+****** Domain Services
+
+Eventually we encounter business logic that doesn't belong to any
+aggregate or value object, or that seems relevant to multiple
+aggregates. In such cases, DDD proposes to implement the logic as a
+domain service.
+
+A /domain service/ is a stateless object that implements the business
+logic. Most of the time, the logic orchestrates calls to various
+components of the system to perform some calculation or
+analysis. Domain services lend themselves to implementing calculation
+logic that requires reading the data of multiple aggregates.
+
+This is not a microservice, SOA, or anything similar -- just a
+stateless object used to host business logic.
+
+** Managing Complexity
+
+Eliyahu M. Goldratt says wehn discussing the complexity of a system,
+we are interested in evaluating the difficulty of controlling and
+predicting the system's behavior. These are reflected by the system's
+degrees of freedom. A system's degrees of freedom are the data points
+needed to describe its state.
+
+A good rule of thumb is to limit the number of data points something
+needs to take to perform its duty.
+
+** Conclusion
+
+The domain model handles complex business logic, and consists of 3
+main building blocks:
+
+- Value objects
+  - concepts of the domain that can be identified exclusively by their
+    values and thus do not require an explicit id field
+- Aggregates
+  - A hierarchy of entities sharing a transactional boundary. All of
+    the data included in an aggregate's boundary has to be strongly
+    consistent to implement its business logic.
+- Domain Services
+  - A stateless object that hosts business logic that doesn't
+    naturally belong to the domain model's aggregates or value objects
+
+
+Value objects describe entities' properties, and entities are bound
+together into aggregates.
+
+* 7. Modeling the Dimension of Time
