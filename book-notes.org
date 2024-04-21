@@ -381,4 +381,160 @@ main building blocks:
 Value objects describe entities' properties, and entities are bound
 together into aggregates.
 
+BUILD: Basic program that uses all 3 (value objects, aggregates,
+domain services)
+
 * 7. Modeling the Dimension of Time
+
+The event-sourced domain model pattern is based on the same premise as
+the domain model pattern, but the way the aggregates' state is
+persisted is different. The event-sourced model uses the event
+sourcing pattern to manage the aggregate's states: instead of
+persisting an aggregate's state, the model generates domain events
+describing each change and uses them as the source of truth for the
+aggregate's data.
+
+** Event Sourcing
+
+The event sourcing pattern introduces the dimension of time into the
+data model.
+
+here is an example of a data representation in an event-sourced
+system:
+
+
+#+DOWNLOADED: screenshot @ 2024-04-21 12:34:01
+[[file:7._Modeling_the_Dimension_of_Time/2024-04-21_12-34-01_screenshot.png]]
+
+** Source of Truth
+
+For the event sourcing pattern to work, all changes to an object's
+state should be represented and persisted as events.
+
+*** Event Store
+
+The event store should be an append-only storage. This is essentially
+a ledger.
+
+BUILD: An event sourcing system with an event store
+
+** Event-Sourced Domain Model
+
+The original domain model maintains a state representation of its
+aggregates and emtis select domain events. The *event-sourced* domain
+model uses domain events exclusively for modeling the aggregates'
+lifecycles.
+
+Each operation on an event-sourced aggregate follows this script:
+
+- load the aggregate's domain events
+- reconstitute a state representation - project the events into a
+  state representation that can be used to make business decisions
+- execute the aggregate's command to execute the business logic, and
+  consequently, produce new domain events
+- commit the new domain events to the event store
+
+** Advantages
+- time traveling
+- deep insight
+- audit log
+- advanced optimistic concurrency management
+
+** Disadvantages
+- learning curve
+- evolving the model
+- architectural complexity
+
+* 8. Architectural Patterns
+
+This chapter focuses on tactical design decisions in a broader
+context: the different ways to orchestrate the interactions and
+dependencies between a system's components.
+
+Architectural patterns introduce organizational principles for the
+different aspects of a codebase and present clear boundaries between
+them: how the business logic is wired to the systems' input, output,
+and other infrastructural components.
+
+** Layered architecture
+
+
+#+DOWNLOADED: screenshot @ 2024-04-21 13:02:43
+[[file:8._Architectural_Patterns/2024-04-21_13-02-43_screenshot.png]]
+
+*** Variation
+
+It's common to see the layered architecture pattern also have a
+service layer.
+
+#+begin_quote
+Defines an application's boundary with a layer of servies that
+establishes a set of available operations and coordinates the
+application's response in each operation.
+
+- Patterns of Enterprise Application Architecture
+#+end_quote
+
+
+#+DOWNLOADED: screenshot @ 2024-04-21 13:04:30
+[[file:8._Architectural_Patterns/2024-04-21_13-04-30_screenshot.png]]
+
+Having an explicit service level has some advantages:
+
+- we can reuse the same service layer to serve multiple public
+  interfaces, e.g. a GUI and an API, without duplication of
+  orchestration logic
+- improved modularity
+- further decouples the presentation and business logic layers
+- makes it easier to test the business functionality
+
+** Ports & Adapters
+
+#+DOWNLOADED: screenshot @ 2024-04-21 13:09:03
+[[file:8._Architectural_Patterns/2024-04-21_13-09-03_screenshot.png]]
+
+The core goal of the ports & adapters architecture (also known as
+hexagonal, onion, or clean architecture) is to decouple the system's
+business logic from it's infrastructure components. Instead of
+referencing and calling the infrastructural components directly, the
+business logic layer defines "ports" that have to be implemented by
+the infrastructure layer. The infrastructure layer implements
+"adapters": concrete implementations of the ports interfaces for
+working with different technologies.
+
+** Command-Query Responsibility Segregation
+
+This pattern enables representation of the system's data in multiple
+persistent models.
+
+We focus on how CQRS allows the use of multiple storage mechanisms for
+representing different models of the system's data.
+
+*** Implementation
+
+There are 2 models (and this pattern separates them):
+- the command execution model
+  - executes operations that modify the system's state.
+  - used to implement business logic, validate rules, and enforce
+    invariants
+- read models
+  - as many models as needed to present data to users or supply
+    information to other systems
+
+*** Model Segregation
+
+In the CQRS architecture, the responsibilities of the system's models
+are segregated according to their type. A command can only operate on
+the strongly consistent command execution model. A query cannot
+directly modify any of the system's persisted state -- netierh the
+read models nor the command execution model.
+
+The command can -- and in many cases should -- return data.
+
+*** When to use CQRS
+
+The CQRS pattern can be useful for applications that need to work with
+the same data in multiple models, potentially stored in different
+kinds of databases.
+
+* 9. Communication Patterns
