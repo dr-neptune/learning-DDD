@@ -538,3 +538,168 @@ the same data in multiple models, potentially stored in different
 kinds of databases.
 
 * 9. Communication Patterns
+
+This chapter discusses patterns for organizing the flow of
+communication across a system's elements.
+
+** Model Translation
+
+In a customer-supplier relationship, the balance of power tips either
+upstream (supplier) or downstream (consumer). Suppose the downstream
+bounded context cannot conform to the upstream bounded context's
+model. In this case, a more elaborate technical solution is required
+that can facilitate communication by translating the bounded contexts'
+models.
+
+This translation can be handled by one, or sometimes both, sides using
+an anticorruption layer or an open-host service. This chapter covers
+the implementation options for model translation without
+differentiating between the patterns.
+
+The model's translation logic can be either stateless or stateful.
+
+- stateless translation happens on the fly, as incoming or outgoing
+  requests are issued
+- stateful translation involves a more complicated translation logic.
+
+*** Stateless Model Translation
+
+For stateless model translation, the bounded context that owns the
+translation implements the proxy design pattern to interject the
+incoming and outgoing requests and map the source model to the bounded
+context's model
+
+#+begin_src python
+class CustomerManagementService:
+    """Simulate a remote service in the Customer Management bounded context."""
+    def get_customer_details(self, customer_id):
+        # Assume fetching customer details is a complex operation.
+        print(f"Fetching details for customer {customer_id}")
+        return {"customer_id": customer_id, "name": "John Doe", "credit_limit": 5000}
+
+class CustomerProxy:
+    """Proxy to interact with the Customer Management Service."""
+    def __init__(self):
+        self.customer_service = CustomerManagementService()
+        self.cache = {}
+
+    def get_customer_details(self, customer_id):
+        if customer_id in self.cache:
+            print("Returning cached data")
+            return self.cache[customer_id]
+
+        details = self.customer_service.get_customer_details(customer_id)
+        # Cache the fetched details
+        self.cache[customer_id] = details
+        return details
+
+class OrderService:
+    """Order Processing context that uses a proxy to access customer data."""
+    def __init__(self, customer_proxy):
+        self.customer_proxy = customer_proxy
+
+    def process_order(self, customer_id, order_amount):
+        customer_details = self.customer_proxy.get_customer_details(customer_id)
+        if order_amount <= customer_details["credit_limit"]:
+            print(f"Order processed for {customer_details['name']} with amount ${order_amount}")
+        else:
+            print("Order amount exceeds credit limit. Cannot process order.")
+
+# Example usage
+customer_proxy = CustomerProxy()
+order_service = OrderService(customer_proxy)
+
+# Processing an order
+order_service.process_order("C001", 1000)
+order_service.process_order("C001", 300)  # This time, it should use cached data.
+#+end_src
+
+BUILD: anticorruption layer system
+
+*** Stateful Model Translation
+
+For more significant model transformations, for example when the
+translation mechanism has to aggregate the source data or unify data
+from multiple sources into a single model -- a stateful translation
+may be required.
+
+*Aggregating incoming data* often requires persistent storage. In some
+ cases, we can use off the shell products.
+
+*Unifying multiple sources*
+In this case it can be beneficial to decouple the integration and
+business logic complexities by fronting the bounded context with an
+anticorruption layer that aggregates data from all other bounded
+contexts.
+
+** Integrating Aggregates
+Earlier we discussed that one of the ways aggregates communicate with
+the rest of the system is by publishing domain events. External
+components can subscribe to these domain events and execute their
+logic. This section focuses on how domain events are published to a
+message bus.
+
+*** Outbox
+
+The outbox pattern ensures reliable publishing of domain events using
+the following algorithm:
+
+- Both the updated aggregate's state and the new domain events are
+  committed in the same atomic transaction
+- A message relay fetches newly committed domain events from the database
+- The relay publishes the domain events to the message bus
+- Upon successful publishing, the relay either marks the events as
+  published in the database or deletes them completely
+
+
+#+begin_src python
+import sqlite3
+import json
+
+def process_order(order_id, new_status):
+    db_connection = sqlite3.connect('application.db')
+    cursor = db_connection.cursor()
+
+    try:
+        # Update the order status in the database
+        cursor.execute('UPDATE orders SET status = ? WHERE order_id = ?', (new_status, order_id))
+
+        # Prepare the message for the outbox
+        message = {'order_id': order_id, 'new_status': new_status}
+        cursor.execute('INSERT INTO outbox (message) VALUES (?)', (json.dumps(message),))
+
+        # Commit the transaction (both operations are atomic)
+        db_connection.commit()
+        print("Order processed and message saved to outbox.")
+
+    except Exception as e:
+        db_connection.rollback()
+        print("Failed to process order:", e)
+
+    finally:
+        db_connection.close()
+
+def relay_messages():
+    db_connection = sqlite3.connect('application.db')
+    cursor = db_connection.cursor()
+    cursor.execute('SELECT * FROM outbox')
+
+    messages = cursor.fetchall()
+    for message in messages:
+        # Simulate sending the message to a message bus
+        print("Publishing message:", message[1])
+        cursor.execute('DELETE FROM outbox WHERE id = ?', (message[0],))
+
+    db_connection.commit()
+    db_connection.close()
+
+# Assuming we have a table `orders` with columns `order_id`, `status`
+# and a table `outbox` with columns `id`, `message`
+
+# Process an order update
+process_order(123, 'Shipped')
+# Relay messages to the message bus
+relay_messages()
+#+end_src
+
+** Saga
