@@ -703,3 +703,116 @@ relay_messages()
 #+end_src
 
 ** Saga
+
+One of the core aggregate design principles is to limit each
+transaction to a single instance of an aggregate. Sometimes there are
+cases when you have to implement a business process that spans
+multiple aggregates.
+
+A saga is a long-running (in terms of transactions) business
+process. The transactions can be handled by not only aggregates but
+also by any component emitting domain events and responding to
+commands. If one of the execution steps fails, the saga is in charge
+of issuing relevant compensating actions to ensure the system state
+remains consistent.
+
+*** Consistency
+
+Although the saga pattern orchestrates a multicomponent transaction,
+the states of the involved components are eventually consistent.
+
+#+begin_quote
+Only the data within an aggregate's boundaries can be considered
+strongly consistent. Everything outside is eventually consistent.
+#+end_quote
+
+Use this as a guiding principle to make sure you are not abusing sagas
+to compensate for improper aggregate boundaries.
+
+** Process Manager
+
+The saga pattern manages a simple, linear flow that matches events to
+the corresponding commands.
+
+The process manager is intended to create a central processing unit
+that maintains the state of the sequence and determines the next
+processing steps.
+
+As a simple rule of thumb, if a saga contains if-else statements to
+choose the correct course of action, it is probably a process manager.
+
+** Sagas
+    Sagas are a sequence of local transactions that are distributed
+    across multiple services or bounded contexts. Each transaction in
+    a saga updates data within its own domain and can trigger
+    subsequent transactions in other services through events.
+
+*** Key Characteristics of Sagas
+        - Decentralization: Sagas typically operate without a central
+          coordinator.
+        - Compensation: Sagas use compensatory actions to maintain
+          consistency across services if any part of the process
+          fails.
+        - Event-Driven: Sagas rely on events to communicate between
+          services, fostering asynchronous and loosely coupled
+          interactions.
+
+** Process Managers
+    Process managers, sometimes called saga orchestrators, are
+    designed to manage and coordinate complex business processes that
+    span multiple services. Unlike sagas, process managers have a
+    central role in directing the interactions between services.
+
+*** Key Characteristics of Process Managers
+        - Centralized Control: Process managers act as orchestrators,
+          managing the state of the overall process and directing the
+          flow based on outcomes.
+        - Stateful: They maintain the state of the process, making
+          decisions based on this accumulated state.
+        - Command-Driven: Process managers use commands to direct
+          services to perform specific operations, although they may
+          also listen to events to determine outcomes.
+
+** Differences Highlighted
+    The main differences between sagas and process managers lie in
+    their coordination style, communication mechanism, and how they
+    manage state.
+
+**** Coordination Style
+        - Sagas: Decentralized, with each step autonomously triggering
+          the next through events.
+        - Process Managers: Centralized, explicitly managing and
+          directing the business process.
+
+**** Communication Mechanism
+        - Sagas: Event-driven, promoting loose coupling between
+          services.
+        - Process Managers: Command-driven, providing explicit
+          directives to services.
+
+**** State Management
+        - Sagas: Each service manages its own state; overall
+          consistency is maintained through compensatory actions.
+        - Process Managers: Maintain state for the entire business
+          process, tracking progress and directing next steps.
+
+** Example Scenario
+    Consider an e-commerce system where the order processing involves
+    multiple services such as order management, inventory, and
+    billing.
+
+**** As a Saga
+        Each service independently reacts to events, starting with the
+        Order Service creating an order and emitting an `OrderCreated`
+        event, followed by the Inventory Service reacting to reserve
+        items and emit further events based on the outcome.
+
+**** As Managed by a Process Manager
+        A Process Manager orchestrates the entire process, starting
+        with a command to create an order, and based on the response,
+        it directs subsequent actions to other services. It also
+        explicitly manages compensating actions in case of failures.
+
+* 10. Design Heuristics
+
+** Bounded Contexts
