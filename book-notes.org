@@ -816,3 +816,79 @@ choose the correct course of action, it is probably a process manager.
 * 10. Design Heuristics
 
 ** Bounded Contexts
+
+Rather than making the model a function of the desired size --
+optimizing for small bounded contexts -- it's much more effective to
+do the opposite: treat the bounded context's size as a function of the
+model it encompasses.
+
+When designing bounded contexts, start with wider boundaries. If
+required, decompose the wide boundaries into smaller ones as you gain
+domain knowledge.
+
+** Business Logic Implementation Patterns
+
+In ch 5-7 we learned 4 ways tomodel business logic: transaction
+script, active record, domain model, and event-sourced domain model
+patterns.
+
+The difference between active record and transaction script is the
+complexity of the data structures. The other 2 (domain model,
+event-sourced), lend themselves to subdomains that have complex
+business logic: core subdomains.
+
+
+#+DOWNLOADED: screenshot @ 2024-04-23 16:45:24
+[[file:10._Design_Heuristics/2024-04-23_16-45-24_screenshot.png]]
+
+** Architectural Patterns
+
+In ch 8 we looked at a layered architecture, ports & adapters, and
+CQRS.
+
+#+DOWNLOADED: screenshot @ 2024-04-23 16:47:10
+[[file:10._Design_Heuristics/2024-04-23_16-47-10_screenshot.png]]
+
+** Testing Strategy
+
+
+#+DOWNLOADED: screenshot @ 2024-04-23 16:48:47
+[[file:10._Design_Heuristics/2024-04-23_16-48-47_screenshot.png]]
+
+** Tactical Design Decision Tree
+
+
+#+DOWNLOADED: screenshot @ 2024-04-23 16:49:39
+[[file:10._Design_Heuristics/2024-04-23_16-49-39_screenshot.png]]
+
+BUILD: Ports & Adapters Architecture
+BUILD: CQRS implementation
+
+* 11. Evolving Design Decisions
+
+** Tactical Design Concerns
+
+The main indicator of a change in a subdomain's type is the inability
+of existing technical design to support current business needs.
+
+*** Transaction Script -> Active Record
+
+when working with data becomes challenging in a transaction script,
+refactor it into the active record pattern.
+
+*** Active Record -> Domain Model
+
+If the business logic that manipulates active records becomes complex
+and you notice more cases of inconsistencies, refactor the
+implementation to the domain model pattern.
+
+*** Domain Model to Event-Sourced Domain Model
+
+Instead of modifying the aggregate's data directly, model the domain
+events needed to represent the aggregate's lifecycle.
+
+The most challening aspect of refactoring a domain model into an
+event-sourced domain model is the history of the existing aggregates:
+migrating the 'timeless' state into the event-based model.
+
+* 12. Event Storming
