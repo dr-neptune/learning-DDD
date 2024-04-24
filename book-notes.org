@@ -1091,3 +1091,63 @@ address:
 - separate ways
 
 * 14. Microservices
+
+A microservice is a service with a micro-public interface: a
+micro-front door. Reducing a service's functionality limits its
+reasons for change and makes the service more autonomous for
+development, management, and scale.
+
+Effective modules are deep: a simple public interface encapsulates
+complex logic. Ineffective modules are shallow: a shallow module's
+public interface encapsulates much less complexity than a deep module.
+
+
+** DDD and Microservices' Boundaries
+
+Both microservices and bounded contexts are physical
+boundaries. Bounded contexts impose limits on the widest valid
+boundaries.
+
+
+#+DOWNLOADED: screenshot @ 2024-04-24 16:58:19
+[[file:14._Microservices/2024-04-24_16-58-19_screenshot.png]]
+
+
+** Aggregates
+
+The aggregate boundary is the narrowest boundary possible.
+
+* 15. Event-Driven Architecture
+
+** Events
+
+In an EDA system, the exchange of events is the key communication
+mechanism for integrating the components and making them a system.
+
+Events
+- a message describing a change that has already happened
+Commands
+- a message describing an operation that has to be carried out
+
+** Event-Driven Design Heuristics
+
+Guiding principles when designing event-driven systems:
+
+- The network is going to be slow
+- Servers will fail at the most inconvenient moment
+- Events will arrive out of order
+- Events will be duplicated
+
+In event driven architectures, the whole system depends on successful
+delivery of the messages. We must ensure events are delivered
+consistently, no matter what:
+
+- Use the outbox pattern to publish messages reliably
+- When publishing messages, ensure deduplication and the ability to
+  reorder messages if needed
+- Leverage the saga and process manager patterns when orchestrating
+  cross-bounded context processes that require issuing compensating
+  actions.
+
+
+* 16. Data Mesh
