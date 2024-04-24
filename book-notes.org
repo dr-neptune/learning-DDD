@@ -892,3 +892,202 @@ event-sourced domain model is the history of the existing aggregates:
 migrating the 'timeless' state into the event-based model.
 
 * 12. Event Storming
+
+Event-storming is a low-tech activity for a group of people to
+brainstorm and rapidly model a business process.
+
+An event storming session has a scope: the business process that the
+group is interested in exploring.
+
+Keep the group on the smaller side, ideally < 10 people.
+
+** What do you need for Event Storming?
+
+- Modeling Space
+  - A whole wall covered with butcher paper makes the best space, but
+    a large whiteboard can work.
+- Sticky Notes
+  - different colors. Each note represents different concepts of the
+    business domain.
+- Markers
+  - for writing on the sticky notes
+- Snacks
+  - typically a session lasts 2-4 hours
+- Room
+  - of the spacious variety
+  - if possible, remove the table and chairs. Force people to stand.
+
+** The Event Storming Process
+
+*** Unstructured exploration
+   * A domain event is something interesting that
+     has happened in the business. Formulate in past tense
+   * All participants grab orange sticky notes, writing whatever domain
+     events come to mind.
+
+     #+DOWNLOADED: screenshot @ 2024-04-24 06:34:02
+     [[file:12._Event_Storming/2024-04-24_06-34-02_screenshot.png]]
+
+
+*** Timelines
+   * Go over the generated domain events and organize them in the
+     order in which they occur in the business domain.
+   * Events should start with the happy path scenario
+   * Following happy path, alternative scenarios can be added
+
+     #+DOWNLOADED: screenshot @ 2024-04-24 06:34:18
+     [[file:12._Event_Storming/2024-04-24_06-34-18_screenshot.png]]
+
+*** Pain Points
+   * Once we have a timeline, identify points in the process that
+     require attention, i.e. bottlenecks, manual steps, missing docs,
+     missing domain knowledge
+
+     #+DOWNLOADED: screenshot @ 2024-04-24 06:35:20
+     [[file:12._Event_Storming/2024-04-24_06-35-20_screenshot.png]]
+
+*** Pivotal Events
+   * Look for significant business events indicating a change in the
+     context or phase.
+   * Mark pivotal events with a vertical bar dividing the events
+     before and after the pivotal event
+   * e.g. shopping cart initialized, order initialized, order shipped,
+     order delivered, order returned
+
+
+#+DOWNLOADED: screenshot @ 2024-04-24 06:37:52
+[[file:12._Event_Storming/2024-04-24_06-37-52_screenshot.png]]
+
+
+*** Commands
+   * Commands describe what triggered an event or flow of events
+   * These describe the system's operations and are formulated in the
+     imperative.
+   * e.g. publish campaign, roll back transaction, submit order
+   * light blue sticky notes
+   * If a particular command is executed by an actor in a specific
+     role, the actor information is added to the command on a small
+     yellow sticky note. Add actors only when it's obvious.
+
+
+#+DOWNLOADED: screenshot @ 2024-04-24 06:40:16
+[[file:12._Event_Storming/2024-04-24_06-40-16_screenshot.png]]
+
+*** Policies
+   * Some commands are added to the model but have no specific actor
+     associated with them.
+   * Look for automation policies that might execute those commands
+   * purple sticky notes
+
+
+#+DOWNLOADED: screenshot @ 2024-04-24 06:42:22
+[[file:12._Event_Storming/2024-04-24_06-42-22_screenshot.png]]
+
+*** Read Models
+   * A view of the data within the domain that the actor uses to make
+     a decision to execute a command
+   * e.g. a view of the data, a report, a notification, and so on
+   * represented by green sticky notes
+
+
+#+DOWNLOADED: screenshot @ 2024-04-24 06:45:41
+[[file:12._Event_Storming/2024-04-24_06-45-41_screenshot.png]]
+
+*** External Systems
+   * represented by pink sticky notes
+
+
+#+DOWNLOADED: screenshot @ 2024-04-24 06:46:32
+[[file:12._Event_Storming/2024-04-24_06-46-32_screenshot.png]]
+
+*** Aggregates
+   * An aggregate receives commands and produces events
+   * large yellow sticky notes, with commands on the left and events
+     on the right
+
+
+#+DOWNLOADED: screenshot @ 2024-04-24 06:47:41
+[[file:12._Event_Storming/2024-04-24_06-47-41_screenshot.png]]
+
+*** Bounded Contexts
+   * Look for aggregates that are related to each other, either
+     because they represent closely related functionality or because
+     they're coupled through policies.
+   * The groups of aggregates form natural candidates for bounded
+     contexts' boundaries
+
+
+#+DOWNLOADED: screenshot @ 2024-04-24 06:48:56
+[[file:12._Event_Storming/2024-04-24_06-48-56_screenshot.png]]
+
+*** Variants
+
+The Event Storming process provides guidance, not hard rules. The
+author usually introduces it with steps 1 (chaotic exploration) - 4
+(pivotal events).
+
+At the end of a full event storming session, you will have a model
+describing the business domain's events, commands, aggregates, and
+even possible bounded contexts.
+
+*** Facilitation Tips
+
++ Start with a quick overview of the process
++ Build a legend
++ Watch the dynamics to either move on to another step or call it a day
++ Try to involve everyone
++ For online sessions, the author suggests making the top bound 5
+  instead of 10
+
+* 13. Domain-Driven Design in the Real World
+
+This chapter focuses on strategies for applying DDD tools and patterns
+in the real world, including on brownfield projects and in
+less-than-ideal environments.
+
+** Strategic Analysis
+*** Understand the Business Domain
+- What is the organization's business domain?
+- Who are its customers?
+- What service, or value, does the organization provide to customers?
+- What companies or products is the organization competing with?
+
+  Identify core, generic, and supporting subdomains
+
+** Explore the Current Design
+
+Once we are familiar with the problem domain, we can investigate the
+solution and its design decisions.
+
+- Start with high-level components
+- Evaluate the tactical design
+  - for each high level component, check which business subdomains it
+    contains and what technical design decisions were taken
+  - Does the solution fit the complexity of the problem? Are there
+    areas where more elaborate design patterns are needed? Are there
+    subdomains where we can use off-the-shelf solutions?
+  - Use the knowledge gained to chart the current designs context map,
+    as though these components were bounded contexts. Identify and
+    track the relationships between the components in terms of bounded
+    context integration patterns
+    - Analyze the resulting context map from a DDD perspective. Are
+      there suboptimal strategic design decisions?
+      - e.g. multiple teams working on same high level component,
+        duplicate implementations, implementation of a core subdomain
+        by an outsourced company, friction because of frequently
+        failing integration, awkward models spreading from external
+        services and legacy systems
+
+** Modernization Strategy
+
+Think big, start small.
+
+Pay attention to problems that the context integration patterns can
+address:
+
+- customer-supplier relationships
+- anticorruption layer
+- open-host service
+- separate ways
+
+* 14. Microservices
