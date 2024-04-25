@@ -1151,3 +1151,91 @@ consistently, no matter what:
 
 
 * 16. Data Mesh
+
+So far we have focused on models that handle online transactional
+processing (OLTP) data. Another type of data that this chapter focused
+on is online analytical processing (OLAP) data.
+
+*Fact Table*
+- Facts represent business activities that have already happened
+- Never deleted or modified, append-only
+
+*Dimension Table*
+- If a fact represents a business process or action, a dimension
+  describes the fact.
+- Dimensions are designed to describe the facts attributes and are
+  referenced as a aforeign key from a fact table to a dimension table.
+
+** Analytical Data Management Platforms
+
+*** Data Warehouse
+
+Extract data from all of the enterprise's operational systems,
+transform the source data into an analytical model, and load the
+resultant data into a data analysis-oriented database.
+
+
+#+DOWNLOADED: screenshot @ 2024-04-25 06:42:29
+[[file:16._Data_Mesh/2024-04-25_06-42-29_screenshot.png]]
+
+or with data marts:
+
+
+#+DOWNLOADED: screenshot @ 2024-04-25 06:44:38
+[[file:16._Data_Mesh/2024-04-25_06-44-38_screenshot.png]]
+
+*** Data Lake
+
+#+DOWNLOADED: screenshot @ 2024-04-25 06:46:04
+[[file:16._Data_Mesh/2024-04-25_06-46-04_screenshot.png]]
+
+Data lakes are schema-less and there is no control over the quality of
+the incoming data. As a result, it is easy for the data to become
+chaotic at certain levels of scale. The joke is that a data lake
+becomes a data swamp.
+
+** Data Mesh
+
+Data mesh architecture defines and protexts model and ownership
+boundaries for analytical data. It is based on 4 core principles:
+
+- decompose data around domains
+  - Instead of building a monolithic analytical model, data mesh
+    suggests using multiple analytical models and align them with the
+    origin of the data.
+  - Each bounded context owns its operational and analytical models.
+
+#+DOWNLOADED: screenshot @ 2024-04-25 06:52:10
+[[file:16._Data_Mesh/2024-04-25_06-52-10_screenshot.png]]
+
+- data as a product
+  - Analytical data should be treated the same as any public API
+    - it should be easy to discover the necessary endpoints: the data
+      output ports
+    - analytical endpoints should have a well-defined schema
+      describing the served data and its format
+    - data should be trustworthy with well defined and monitored
+      service-level agreements (SLAs)
+    - should be versioned as a regular API and manage
+      integration-breaking changes in the model
+- enable autonomy
+  - product teams should be able to both create their own data
+    products and consume data products served by other bounded
+    contexts
+- build an ecosystem
+  - appoint a federated governance body to enable interoperability and
+    ecosystem thinking.
+  - the governance group is in change of defining the rules to ensure
+    a healthy and interoperable ecosystem.
+
+
+#+DOWNLOADED: screenshot @ 2024-04-25 06:58:41
+[[file:16._Data_Mesh/2024-04-25_06-58-41_screenshot.png]]
+
+* 17. Closing Words
+
+
+#+DOWNLOADED: screenshot @ 2024-04-25 07:05:00
+[[file:17._Closing_Words/2024-04-25_07-05-00_screenshot.png]]
+
+* Appendix A: Applying DDD: A Case Study
